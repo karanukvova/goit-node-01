@@ -5,8 +5,8 @@ import { nanoid } from "nanoid";
 
 const contactsPath = path.resolve("db", "contacts.json");
 
-const updateMovies = (movies) =>
-  fs.writeFile(contactsPath, JSON.stringify(movies, null, 2));
+const updateContacts = (contacts) =>
+  fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
 
 export const getAllContacts = async () => {
   const data = await fs.readFile(contactsPath, "utf-8");
@@ -26,11 +26,22 @@ export const removeContact = async id => {
     return null;
   }
   const [result] = contacts.splice(index, 1);
-  await updateMovies(contacts);
+  await updateContacts(contacts);
   return result;
 }
 
-export const addContact= async (name, email, phone) => {
+export const updateContactsById = async (id, data) => {
+    const contacts = await getAllContacts();
+    const index = contacts.findIndex(item => item.id === id);
+    if (index === -1) {
+        return null;
+    }
+    contacts[index] = {id, ...data};
+    await updateContacts(contacts);
+    return contacts[index];
+}
+
+export const addContact = async ({ name, email, phone }) => {
   const contacts = await getAllContacts();
   const newContact = {
     id: nanoid(),
@@ -40,7 +51,7 @@ export const addContact= async (name, email, phone) => {
   };
   contacts.push(newContact);
 
-  await updateMovies(contacts);
+  await updateContacts(contacts);
   return newContact;
 }
 
@@ -49,4 +60,5 @@ export default {
   getContactById,
   removeContact,
   addContact,
+  updateContactsById
 };
